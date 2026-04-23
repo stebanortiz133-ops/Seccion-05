@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 | Demanda Académica y Laboral</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:  #1B3A5C;
+    --navy2: #2B4F76;
+    --steel: #4A6D8C;
+    --light: #E8EEF4;
+    --red:   #C0392B;
+    --gold:  #D4A017;
+    --green: #27AE60;
+    --orange:#E67E22;
+    --gray:  #F4F7FB;
+    --text:  #1A1A2E;
+    --white: #ffffff;
+  }
+  body { font-family: 'Trebuchet MS', sans-serif; background: var(--gray); color: var(--text); min-height: 100vh; }
+
+  /* ── SCROLL ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-thumb { background: var(--steel); border-radius: 4px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes countUp  { from{opacity:0} to{opacity:1} }
+  .tab-content { animation: fadeUp .35s ease; }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--navy);
+    color: #fff;
+    padding: 28px 48px 24px;
+    border-bottom: 4px solid var(--gold);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .header-num { font-size: 64px; font-weight: 900; line-height: 1; font-family: Georgia, serif; color: rgba(255,255,255,.12); }
+  .header-title { font-size: 26px; font-weight: 700; letter-spacing: .5px; font-family: Georgia, serif; }
+  .header-sub   { font-size: 10px; letter-spacing: 3px; color: rgba(255,255,255,.55); margin-top: 3px; }
+
+  /* ── TABS ── */
+  .tabs { background: var(--navy2); display: flex; overflow-x: auto; }
+  .tab-btn {
+    padding: 11px 22px; border: none; cursor: pointer; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; white-space: nowrap; color: rgba(255,255,255,.5);
+    background: transparent; border-bottom: 3px solid transparent; transition: all .2s;
+    font-family: 'Trebuchet MS', sans-serif;
+  }
+  .tab-btn.active { color: #fff; background: var(--navy); border-bottom: 3px solid var(--gold); }
+  .tab-btn:hover:not(.active) { color: rgba(255,255,255,.8); }
+
+  /* ── CONTENT AREA ── */
+  .content { padding: 28px 48px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white); border: 1px solid var(--light); padding: 20px;
+    transition: box-shadow .2s;
+  }
+  .card:hover { box-shadow: 0 4px 16px rgba(27,58,92,.1); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+  .mb-24 { margin-bottom: 24px; }
+
+  /* ── BLOCK TITLE ── */
+  .block-title {
+    background: var(--navy); color: #fff; padding: 7px 14px;
+    font-size: 10px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase;
+    margin-bottom: 14px; font-family: Georgia, serif;
+  }
+  .block-title.red { background: var(--red); }
+
+  /* ── SOURCE ── */
+  .source { font-size: 9px; color: #7A8FA6; margin-top: 8px; font-style: italic; }
+  .source strong { font-weight: 700; }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  thead tr { background: var(--navy); color: #fff; }
+  thead th { padding: 8px 10px; text-align: left; font-size: 10px; letter-spacing: 1px; }
+  tbody tr { border-bottom: 1px solid var(--light); transition: background .15s; }
+  tbody tr:hover { background: #EBF0F7 !important; cursor: default; }
+  tbody tr:nth-child(even) { background: #F9FBFD; }
+  tbody td { padding: 7px 10px; }
+  .td-bold { font-weight: 600; color: var(--navy); }
+
+  /* ── BADGES ── */
+  .badge { border-radius: 3px; padding: 2px 7px; font-size: 9px; font-weight: 700; color: #fff; display: inline-block; }
+  .badge-green  { background: var(--green); }
+  .badge-orange { background: var(--orange); }
+  .badge-red    { background: var(--red); }
+  .badge-steel  { background: var(--steel); }
+
+  /* ── KPI BOXES ── */
+  .kpi-box {
+    background: var(--light); padding: 16px; text-align: center;
+    border-top: 3px solid var(--navy); transition: transform .2s, box-shadow .2s;
+    cursor: default;
+  }
+  .kpi-box:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.1); }
+  .kpi-val   { font-size: 28px; font-weight: 800; font-family: Georgia, serif; }
+  .kpi-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
+  .kpi-sub   { font-size: 9px; color: var(--steel); margin-top: 2px; }
+
+  /* ── ALERT BOX ── */
+  .alert-box {
+    background: #FFF3F3; border: 2px solid var(--red); padding: 12px 18px;
+    display: flex; gap: 14px; align-items: flex-start; border-radius: 4px; margin-bottom: 24px;
+  }
+  .alert-icon { font-size: 26px; flex-shrink: 0; }
+  .alert-title { font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 1px; }
+  .alert-body  { font-size: 11px; line-height: 1.7; margin-top: 4px; }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    background: var(--light); border-left: 4px solid var(--navy);
+    padding: 16px 20px; margin-bottom: 20px;
+  }
+  .info-box-title { font-size: 10px; font-weight: 700; color: var(--navy); letter-spacing: 2px; margin-bottom: 8px; }
+
+  /* ── PARADOX BOX ── */
+  .paradox {
+    background: var(--navy); color: #fff; padding: 20px; margin-bottom: 24px; border-radius: 4px;
+  }
+  .paradox-title { font-size: 10px; font-weight: 700; color: var(--gold); letter-spacing: 2px; margin-bottom: 12px; }
+  .paradox-grid  { display: grid; grid-template-columns: 1fr 48px 1fr; gap: 16px; align-items: center; }
+  .paradox-box-red   { background: rgba(192,57,43,.25); border: 1px solid rgba(192,57,43,.5); padding: 16px; border-radius: 4px; }
+  .paradox-box-green { background: rgba(39,174,96,.25);  border: 1px solid rgba(39,174,96,.5);  padding: 16px; border-radius: 4px; }
+  .paradox-sep { font-size: 36px; color: var(--gold); text-align: center; }
+  .paradox-sub-title-red   { font-size: 12px; font-weight: 700; color: #FF8C78; margin-bottom: 6px; }
+  .paradox-sub-title-green { font-size: 12px; font-weight: 700; color: #78FFB0; margin-bottom: 6px; }
+  .paradox p { font-size: 11px; line-height: 1.7; }
+
+  /* ── CONCLUSION BOX ── */
+  .concl {
+    background: var(--navy); color: #fff; padding: 20px; border-radius: 4px;
+  }
+  .concl-title { font-size: 10px; font-weight: 700; color: var(--gold); letter-spacing: 2px; margin-bottom: 12px; }
+  .concl-grid  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; font-size: 11px; line-height: 1.7; }
+  .concl-sub   { color: var(--gold); font-weight: 700; margin-bottom: 5px; font-size: 12px; }
+
+  /* ── CAREER SELECTOR ── */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .filter-btn {
+    padding: 5px 14px; border: 1px solid var(--light); background: #fff;
+    border-radius: 20px; font-size: 10px; cursor: pointer; font-weight: 600;
+    transition: all .2s; font-family: 'Trebuchet MS', sans-serif;
+  }
+  .filter-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .filter-btn:hover:not(.active) { border-color: var(--steel); background: var(--light); }
+  .career-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; margin-bottom: 24px; }
+  .career-list { display: flex; flex-direction: column; gap: 8px; }
+  .career-item {
+    border: 2px solid var(--light); background: #fff; padding: 12px 14px;
+    cursor: pointer; transition: all .25s; border-radius: 4px;
+  }
+  .career-item:hover { border-color: var(--steel); background: var(--light); }
+  .career-item.selected { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .career-item-name { font-size: 11px; font-weight: 700; display: flex; justify-content: space-between; }
+  .career-item-sub  { font-size: 9px; margin-top: 4px; opacity: .8; }
+  .career-detail { background: #fff; border: 1px solid var(--light); padding: 24px; }
+  .career-detail-empty {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 8px; color: var(--steel); font-size: 12px;
+    min-height: 280px;
+  }
+  .career-detail-name  { font-size: 18px; font-weight: 800; color: var(--navy); font-family: Georgia, serif; margin-bottom: 4px; }
+  .career-detail-sub   { font-size: 10px; color: var(--steel); letter-spacing: 1px; margin-bottom: 16px; }
+  .progress-wrap { margin-bottom: 10px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px; font-weight: 600; }
+  .progress-track { background: var(--light); border-radius: 20px; height: 10px; overflow: hidden; }
+  .progress-bar   { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--navy2), var(--steel)); transition: width 1s ease; }
+  .career-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .career-stat { background: var(--light); padding: 10px 12px; border-radius: 4px; text-align: center; }
+  .career-stat-k { font-size: 9px; color: var(--steel); margin-bottom: 4px; }
+  .career-stat-v { font-size: 13px; font-weight: 700; color: var(--navy); }
+
+  /* ── LEGEND DOTS ── */
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 9px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* ── CANVAS WRAPPER ── */
+  .chart-wrap { position: relative; height: 240px; }
+  .chart-wrap-sm { position: relative; height: 180px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: #EEF2F6; border-top: 2px solid var(--navy); padding: 16px 48px;
+  }
+  .footer-title { font-size: 9px; color: var(--steel); font-weight: 700; letter-spacing: 2px; margin-bottom: 6px; }
+  .footer-refs  { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 32px; font-size: 9px; color: #5A6E82; line-height: 1.8; }
+
+  /* ── CHART MÉDICOS ── */
+  .medicos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  .medicos-text p { font-size: 11px; line-height: 1.8; margin-bottom: 8px; }
+  .quote { color: var(--red); font-weight: 600; font-size: 10px; }
+  .quote-attr { display: block; font-weight: 400; color: var(--steel); margin-top: 2px; }
+
+  /* ── PROPUESTA ROWS ── */
+  tr.propuesta { background: #F0FFF4 !important; border-left: 3px solid var(--green); }
+  tr.propuesta:hover { background: #E0F8EA !important; }
+  .green-note { font-size: 9px; color: var(--green); margin-top: 6px; }
+
+  @media (max-width: 900px) {
+    .content { padding: 16px 20px; }
+    .header  { padding: 20px 20px 16px; }
+    .grid-2, .grid-4, .career-grid, .paradox-grid, .concl-grid { grid-template-columns: 1fr; }
+    .paradox-sep { display: none; }
+    .footer { padding: 16px 20px; }
+    .footer-refs { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <span class="header-num">05</span>
+  <div>
+    <div class="header-title">DEMANDA ACADÉMICA Y LABORAL</div>
+    <div class="header-sub">ANÁLISIS LATAM · ECUADOR · ZONA 6 · MERCADO LABORAL · RELACIÓN FORMACIÓN–EMPLEO</div>
+  </div>
+</div>
+
+<!-- ── TABS ── -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(0)">5.1 LATAM</button>
+  <button class="tab-btn" onclick="switchTab(1)">5.2 Ecuador</button>
+  <button class="tab-btn" onclick="switchTab(2)">5.3 Zona 6</button>
+  <button class="tab-btn" onclick="switchTab(3)">5.4 Laboral</button>
+  <button class="tab-btn" onclick="switchTab(4)">5.5 Form.–Mercado</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="content">
+
+  <!-- ══ TAB 5.1 LATAM ══ -->
+  <div class="tab-panel active tab-content" id="tab-0">
+    <div class="grid-2">
+      <div class="card">
+        <div class="block-title">Crecimiento proyectado por sector — WEF Future of Jobs 2025</div>
+        <div class="chart-wrap"><canvas id="chartWef"></canvas></div>
+        <p class="source"><strong>Fuente:</strong> Foro Económico Mundial — Future of Jobs Report 2025 (enero 2025)</p>
+      </div>
+      <div class="card">
+        <div class="block-title">Distribución demanda laboral LATAM 2024</div>
+        <div class="chart-wrap"><canvas id="chartLatamPie"></canvas></div>
+        <p class="source"><strong>Fuente:</strong> ManpowerGroup Employment Outlook Survey 2024; Layboard LATAM 2024</p>
+      </div>
+    </div>
+
+    <div class="card mb-24">
+      <div class="block-title">Sectores con mayor crecimiento de empleo — síntesis multi-fuente</div>
+      <table>
+        <thead><tr>
+          <th>Área / Perfil profesional</th><th>Tendencia LATAM</th><th>Crecimiento proyectado</th><th>Fuente</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="td-bold">Ing. de Software / IA / Big Data</td><td>↑↑ Muy alta</td><td>≈30–42% al 2027</td><td>WEF FoJ 2023 &amp; 2025</td></tr>
+          <tr><td class="td-bold">Ciberseguridad</td><td>↑↑ Muy alta</td><td>33% al 2030</td><td>Bureau of Labor Statistics EE.UU. / UNIR Ecuador 2024</td></tr>
+          <tr><td class="td-bold">Analista de datos / Ciencia de datos</td><td>↑↑ Muy alta</td><td>58% neto en vacantes</td><td>WEF FoJ 2023; Xataka 2024</td></tr>
+          <tr><td class="td-bold">Salud &amp; Cuidados (técnicos especializados)</td><td>↑↑ Alta</td><td>+24 M empleos al 2030</td><td>WEF FoJ 2025; OIT Panorama Laboral 2024</td></tr>
+          <tr><td class="td-bold">Agropecuario / Agroecología</td><td>↑ Alta</td><td>+34 M puestos al 2030</td><td>WEF FoJ 2025 — transición verde</td></tr>
+          <tr><td class="td-bold">Construcción sostenible / Smart Cities</td><td>↑ Alta</td><td>Crecimiento significativo en volumen</td><td>WEF FoJ 2025</td></tr>
+          <tr><td class="td-bold">Marketing Digital / E-commerce</td><td>↑ Alta</td><td>Alta; 86% empresas adoptan plataformas digitales</td><td>WEF FoJ 2025; SEAS Latam 2024</td></tr>
+          <tr><td class="td-bold">Turismo y gastronomía</td><td>↑ Moderada</td><td>Recuperación pospandemia sostenida</td><td>OIT Panorama Laboral 2024</td></tr>
+        </tbody>
+      </table>
+      <p class="source"><strong>Fuente:</strong> WEF Future of Jobs 2023 &amp; 2025 · OIT Panorama Laboral ALC 2024 · ManpowerGroup Employment Outlook Survey 2024</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">INTERPRETACIÓN</div>
+      <p style="font-size:11px;line-height:1.8">
+        A nivel global, <strong>la tecnología y la digitalización concentran el mayor crecimiento</strong> de empleo proyectado hacia 2030,
+        seguidas por salud, agropecuario verde y construcción sostenible. El WEF estima la creación de
+        <strong>170 millones de nuevos puestos al 2030</strong>, con un saldo neto de 78 millones. Las carreras propuestas
+        (Ing. Tecnología e Informática, Tecnologías en Salud, Mercadotecnia y Diseño, Turismo, Construcción, Agropecuaria)
+        se alinean directamente con estos sectores de alta proyección global — sectores con
+        <em>baja postulación académica pero alta demanda laboral</em>, lo que define su pertinencia estratégica.
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ TAB 5.2 ECUADOR ══ -->
+  <div class="tab-panel tab-content" id="tab-1">
+    <div class="alert-box">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <div class="alert-title">ADVERTENCIA: ALTA POSTULACIÓN ≠ ALTA EMPLEABILIDAD</div>
+        <div class="alert-body">
+          Las carreras más postuladas (Medicina, Derecho, Enfermería) generan <strong>saturación laboral crítica</strong>.
+          El <strong>61,1% de estudiantes</strong> elige carreras tradicionales (SENESCYT 2022). Las
+          <strong>carreras menos postuladas</strong> —coincidentes con las propuestas del proyecto— presentan
+          alta demanda insatisfecha del mercado laboral.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="block-title">Carreras más postuladas — Ecuador 2022 (total ambos semestres)</div>
+        <div class="chart-wrap" style="height:270px"><canvas id="chartPostuladas"></canvas></div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#C0392B"></span> Saturación MUY ALTA</span>
+          <span><span class="legend-dot" style="background:#E67E22"></span> ALTA</span>
+          <span><span class="legend-dot" style="background:#4A6D8C"></span> MEDIA</span>
+          <span><span class="legend-dot" style="background:#27AE60"></span> BAJA</span>
+        </div>
+        <p class="source"><strong>Fuente:</strong> SENESCYT 2022 — datos de postulación, publicados en CEAP-ESPOL dic. 2023</p>
+      </div>
+      <div class="card">
+        <div class="block-title red">Caso emblemático: sobreoferta de médicos — Ecuador</div>
+        <div class="chart-wrap-sm"><canvas id="chartMedicos"></canvas></div>
+        <div class="medicos-text" style="margin-top:14px">
+          <p>En 2025: <strong>22.821 títulos médicos</strong> emitidos; <strong>72% médicos generales</strong>.
+          Solo <strong>100–150 plazas públicas/año</strong>. Tasa actual: <strong>40 galenos/10.000 hab.</strong> (OMS recomienda 23).
+          Proyección 2030: <strong>59,1</strong> — más del doble del estándar.</p>
+          <p class="quote">"El país se está saturando de médicos generales."
+            <span class="quote-attr">— Colegio de Médicos de Pichincha, Ecuavisa dic. 2025</span>
+          </p>
+        </div>
+        <p class="source"><strong>Fuente:</strong> Hidrobo E. (2024) La Oferta y Demanda de Médicos Ecuador 2016–2030; ACESS 2025; Ecuavisa dic. 2025</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="block-title">Postulación académica vs. empleabilidad real — Ecuador</div>
+      <table>
+        <thead><tr>
+          <th>Carrera</th><th>Postulantes 2022</th><th>Saturación laboral</th><th>Plazas/año</th><th>Observación</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="td-bold">Medicina</td><td>22.449</td><td>🔴 MUY ALTA</td><td>100–150 (público)</td><td>37 facultades; moratoria propuesta por AFEME/CES</td></tr>
+          <tr><td class="td-bold">Derecho</td><td>25.096</td><td>🔴 MUY ALTA</td><td>Limitada</td><td>Saturación crónica; mercado informal en expansión</td></tr>
+          <tr><td class="td-bold">Educación Inicial</td><td>24.359</td><td>🟠 ALTA</td><td>Estable</td><td>Auge modalidad online; empleo público limitado</td></tr>
+          <tr><td class="td-bold">Enfermería</td><td>22.789</td><td>🟠 ALTA</td><td>Media</td><td>Demanda real &lt; postulación; migración laboral alta</td></tr>
+          <tr class="propuesta"><td class="td-bold">Ing. Tecnol. e Informática</td><td>&lt; 500</td><td>🟢 MUY BAJA</td><td>Alta y creciente</td><td>⭐ Escasez de talento; salarios competitivos · <strong>PROPUESTA</strong></td></tr>
+          <tr class="propuesta"><td class="td-bold">Tecnologías en Salud</td><td>&lt; 300</td><td>🟢 MUY BAJA</td><td>Alta</td><td>⭐ Déficit crítico de técnicos especializados · <strong>PROPUESTA</strong></td></tr>
+          <tr class="propuesta"><td class="td-bold">Mercadotecnia y Diseño</td><td>&lt; 300</td><td>🟢 BAJA</td><td>Alta</td><td>⭐ Digitalización acelerada; alta demanda de perfiles · <strong>PROPUESTA</strong></td></tr>
+          <tr class="propuesta"><td class="td-bold">Tecnol. en Construcción</td><td>&lt; 300</td><td>🟢 BAJA</td><td>Alta</td><td>⭐ Infraestructura sostenible; demanda sostenida · <strong>PROPUESTA</strong></td></tr>
+          <tr class="propuesta"><td class="td-bold">Tecnol. Agropecuaria</td><td>&lt; 250</td><td>🟢 BAJA</td><td>Alta</td><td>⭐ Transición verde; Morona Santiago y Cañar · <strong>PROPUESTA</strong></td></tr>
+          <tr class="propuesta"><td class="td-bold">Tecnol. Turismo y Cultura</td><td>&lt; 270</td><td>🟢 MUY BAJA</td><td>Alta</td><td>⭐ Cuenca Patrimonio UNESCO; recuperación pospandemia · <strong>PROPUESTA</strong></td></tr>
+        </tbody>
+      </table>
+      <p class="green-note">⬤ Filas verdes = carreras propuestas del proyecto</p>
+      <p class="source"><strong>Fuente:</strong> SENESCYT 2022 (CEAP-ESPOL dic. 2023); ACESS 2025; Hidrobo 2024; WEF FoJ 2025; INEC ENEMDU 2024</p>
+    </div>
+  </div>
+
+  <!-- ══ TAB 5.3 ZONA 6 ══ -->
+  <div class="tab-panel tab-content" id="tab-2">
+    <!-- Selector interactivo de carreras -->
+    <div style="font-size:10px;font-weight:700;color:var(--navy);letter-spacing:2px;margin-bottom:12px">
+      ANÁLISIS INTERACTIVO — CARRERAS PROPUESTAS POR SECTOR
+    </div>
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" onclick="filterSector('TODOS',this)">Todos los sectores</button>
+      <button class="filter-btn" onclick="filterSector('TI',this)">💻 Tecnología</button>
+      <button class="filter-btn" onclick="filterSector('CONST',this)">🏗️ Construcción</button>
+      <button class="filter-btn" onclick="filterSector('MKT',this)">📊 Mercadotecnia</button>
+      <button class="filter-btn" onclick="filterSector('TUR',this)">🌍 Turismo</button>
+      <button class="filter-btn" onclick="filterSector('SALUD',this)">🏥 Salud</button>
+      <button class="filter-btn" onclick="filterSector('AGRO',this)">🌱 Agropecuaria</button>
+    </div>
+    <div class="career-grid mb-24">
+      <div class="career-list" id="careerList"></div>
+      <div class="career-detail" id="careerDetail">
+        <div class="career-detail-empty"><span style="font-size:40px">👈</span>Selecciona una carrera para ver el detalle</div>
+      </div>
+    </div>
+
+    <div class="card mb-24">
+      <div class="block-title">Brechas de oferta académica por sector productivo — Zona 6</div>
+      <table>
+        <thead><tr>
+          <th>Sector productivo</th><th>Relevancia Zona 6</th><th>Carrera requerida</th><th>Oferta actual IES</th><th>Brecha</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="td-bold">TI / Software / Automatización</td><td>Muy alta — hub industrial Cuenca</td><td>Ing. Tecnología e Informática</td><td>Parcial (UCuenca, UPS)</td><td>🔴 Sin oferta tecnológica fuera de Cuenca</td></tr>
+          <tr><td class="td-bold">Manufactura / Industria</td><td>Muy alta — Cuenca concentra industria</td><td>Tecnologías de Producción</td><td>Muy escasa</td><td>🔴 Formación técnica insuficiente para sector fabril</td></tr>
+          <tr><td class="td-bold">Construcción sostenible</td><td>Alta — proyectos urbano/rurales</td><td>Tecnologías en Construcción</td><td>Muy escasa</td><td>🔴 No hay oferta tecnológica en la Zona 6</td></tr>
+          <tr><td class="td-bold">Turismo &amp; Patrimonio</td><td>Muy alta — Cuenca Patrimonio UNESCO</td><td>Tecnol. Turismo y Cultura</td><td>Escasa (solo UCuenca hospitalidad)</td><td>🟠 Sin tecnológico en turismo rural/cultural</td></tr>
+          <tr><td class="td-bold">Salud técnica / auxiliares</td><td>Alta — déficit de especialistas</td><td>Centro Tecnol. en Salud</td><td>Muy escasa (nivel técnico)</td><td>🔴 Hospitales reportan falta de técnicos especializados</td></tr>
+          <tr><td class="td-bold">Agropecuario / Agroecología</td><td>Muy alta — Morona Santiago y Cañar</td><td>Tecnología Agropecuaria</td><td>Escasa (UNAE, Quilloac)</td><td>🔴 Perfil técnico-práctico no cubierto</td></tr>
+          <tr><td class="td-bold">Marketing / Diseño digital</td><td>Media-alta — digitalización comercio</td><td>Mercadotecnia y Diseño</td><td>Escasa</td><td>🟠 Solo carreras universitarias; sin tecnológico</td></tr>
+        </tbody>
+      </table>
+      <p class="source"><strong>Fuente:</strong> SENESCYT oferta académica vigente 2022; Dirección Regional del Trabajo Cuenca 2023; INEC ENEMDU 2024</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="block-title">Empleo adecuado — Cuenca vs. nacional (I Trim. 2022)</div>
+        <div class="chart-wrap-sm"><canvas id="chartCuenca"></canvas></div>
+        <p class="source"><strong>Fuente:</strong> INEC — ENEMDU I Trimestre 2022; Primicias abr. 2022</p>
+      </div>
+      <div class="card">
+        <div class="block-title">Distribución empleo por rama de actividad — Ecuador (I Trim. 2024)</div>
+        <div class="chart-wrap-sm"><canvas id="chartRamas"></canvas></div>
+        <p class="source"><strong>Fuente:</strong> INEC — ENEMDU I Trimestre 2024 (rama de actividad CIIU 4.1)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 5.4 LABORAL ══ -->
+  <div class="tab-panel tab-content" id="tab-3">
+    <div class="grid-4">
+      <div class="kpi-box" style="border-top-color:var(--red)">
+        <div class="kpi-val" style="color:var(--red)" data-target="33.7" data-suffix="%">0%</div>
+        <div class="kpi-label">Empleo adecuado nacional</div>
+        <div class="kpi-sub">Nov. 2024 (↓ vs 35,8% en 2023)</div>
+      </div>
+      <div class="kpi-box" style="border-top-color:var(--navy)">
+        <div class="kpi-val" style="color:var(--navy)" data-target="55" data-suffix="%">0%</div>
+        <div class="kpi-label">Empleo adecuado Cuenca</div>
+        <div class="kpi-sub">I trim. 2022 — la más alta del país</div>
+      </div>
+      <div class="kpi-box" style="border-top-color:var(--navy2)">
+        <div class="kpi-val" style="color:var(--navy2)" data-target="4114" data-suffix="">0</div>
+        <div class="kpi-label">Vinculaciones laborales Azuay</div>
+        <div class="kpi-sub">Año 2023, Dirección Regional del Trabajo</div>
+      </div>
+      <div class="kpi-box" style="border-top-color:var(--steel)">
+        <div class="kpi-val" style="color:var(--steel)" data-target="54.2" data-suffix="%">0%</div>
+        <div class="kpi-label">Sector informal Ecuador</div>
+        <div class="kpi-sub">Total ocupados, I trim. 2024</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="block-title">Sectores con mayor oferta de empleo — Ecuador 2025 (proyección)</div>
+        <div class="chart-wrap"><canvas id="chartSectores"></canvas></div>
+        <p class="source"><strong>Fuente:</strong> Primicias — Sectores con mayor oferta de empleo para 2025 (dic. 2024)</p>
+      </div>
+      <div class="card">
+        <div class="block-title">Perfiles tecnológicos en Ecuador — escasez y salarios 2024</div>
+        <table>
+          <thead><tr><th>Perfil</th><th>Escasez</th><th>Salario estimado</th></tr></thead>
+          <tbody>
+            <tr><td class="td-bold">Especialista Ciberseguridad</td><td>🔴 Crítica</td><td>Hasta $5.000 (prom. máx. $2.000)</td></tr>
+            <tr><td class="td-bold">Desarrollador de software</td><td>🔴 Alta</td><td>Competitivo a escala internacional</td></tr>
+            <tr><td class="td-bold">Analista de datos / Big Data</td><td>🔴 Alta</td><td>Superior al promedio nacional</td></tr>
+            <tr><td class="td-bold">Marketing digital / SEO</td><td>🟠 Alta</td><td>Creciente; ligado a digitalización</td></tr>
+            <tr><td class="td-bold">Técnicos en Salud especializados</td><td>🔴 Alta</td><td>Demanda insatisfecha crónica</td></tr>
+            <tr><td class="td-bold">Técnicos agropecuarios</td><td>🟠 Media-alta</td><td>Ligado a proyectos verdes</td></tr>
+          </tbody>
+        </table>
+        <p class="source"><strong>Fuente:</strong> Iberonex — Los empleos demandados en Ecuador 2024; Primicias dic. 2024</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">OIT CINTERFOR — LINEAMIENTO CLAVE</div>
+      <p style="font-size:11px;line-height:1.8">
+        El informe <em>El Futuro de la Formación Profesional en América Latina y el Caribe</em> (OIT/Cinterfor, 2017)
+        establece que el <strong>alineamiento entre la formación y el desarrollo productivo</strong> es uno de los desafíos centrales de la región.
+        Señala la necesidad de que los centros de formación evolucionen hacia <strong>Centros de Tecnología con vinculación directa al sector productivo</strong>,
+        anticipando competencias en sectores de alta transformación: tecnología digital, agroindustria, turismo, salud técnica y construcción.
+        Estos lineamientos validan directamente la pertinencia de las carreras propuestas. <strong>ISBN: 978-92-9088-274-9</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ TAB 5.5 FORMACIÓN–MERCADO ══ -->
+  <div class="tab-panel tab-content" id="tab-4">
+    <div class="paradox mb-24">
+      <div class="paradox-title">LA PARADOJA ECUATORIANA</div>
+      <div class="paradox-grid">
+        <div class="paradox-box-red">
+          <div class="paradox-sub-title-red">ALTA POSTULACIÓN → SATURACIÓN</div>
+          <p>Medicina, Derecho, Educación, Enfermería concentran <strong>+90.000 postulantes/año</strong> pero generan
+          sobreoferta crítica. La carrera de medicina tiene tasa de 40 médicos/10.000 hab. (OMS recomienda 23).
+          Cada año: ≈3.000 graduados vs. solo 100–150 plazas disponibles.</p>
+        </div>
+        <div class="paradox-sep">⇄</div>
+        <div class="paradox-box-green">
+          <div class="paradox-sub-title-green">BAJA POSTULACIÓN → OPORTUNIDAD</div>
+          <p>Tecnología, Construcción, Turismo, Salud técnica, Agropecuaria y Mercadotecnia registran
+          <strong>postulaciones &lt; 500/año</strong>, pero son los sectores con mayor escasez de talento
+          y mejores perspectivas salariales según WEF 2025 y SENESCYT.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-24">
+      <div class="block-title">Pertinencia de las carreras propuestas — escala multi-nivel</div>
+      <table>
+        <thead><tr>
+          <th>Carrera propuesta</th><th style="text-align:center">Dem. LATAM</th>
+          <th style="text-align:center">Dem. Ecuador</th><th style="text-align:center">Dem. Zona 6</th>
+          <th style="text-align:center">Saturación</th><th style="text-align:center">Urgencia</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="td-bold">Ing. Tecnología e Informática</td>
+            <td style="text-align:center"><span class="badge badge-green">MUY ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">MUY BAJA</span></td>
+            <td style="text-align:center">⭐⭐⭐⭐⭐</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Tecnologías en Construcción</td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">BAJA</span></td>
+            <td style="text-align:center">⭐⭐⭐⭐</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Mercadotecnia y Diseño</td>
+            <td style="text-align:center"><span class="badge badge-green">MUY ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-steel">MEDIA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">BAJA</span></td>
+            <td style="text-align:center">⭐⭐⭐⭐</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Tecnol. Turismo y Cultura</td>
+            <td style="text-align:center"><span class="badge badge-orange">MODERADA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">MUY ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">MUY BAJA</span></td>
+            <td style="text-align:center">⭐⭐⭐⭐⭐</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Centro Tecnol. en Salud</td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">MUY ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">MUY ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">MUY BAJA</span></td>
+            <td style="text-align:center">⭐⭐⭐⭐⭐</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Tecnología Agropecuaria</td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">MUY ALTA</span></td>
+            <td style="text-align:center"><span class="badge badge-green">BAJA</span></td>
+            <td style="text-align:center">⭐⭐⭐⭐⭐</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="source"><strong>Fuente:</strong> WEF FoJ 2025; SENESCYT 2022; INEC ENEMDU 2024; OIT Cinterfor 2017; Dirección Regional Trabajo Cuenca 2023</p>
+    </div>
+
+    <div class="concl">
+      <div class="concl-title">CONCLUSIONES DEL APARTADO 5</div>
+      <div class="concl-grid">
+        <div>
+          <div class="concl-sub">Brecha estructural</div>
+          El Ecuador produce anualmente miles de profesionales en carreras saturadas (Medicina, Derecho) mientras los sectores
+          tecnológicos, agropecuarios, de construcción y turismo presentan escasez crítica de perfiles técnicos calificados.
+        </div>
+        <div>
+          <div class="concl-sub">Oportunidad del proyecto</div>
+          Las seis carreras propuestas corresponden exactamente a los sectores de mayor déficit de oferta académica técnica
+          en la Zona 6 y de mayor proyección laboral según WEF 2025, OIT Cinterfor y SENESCYT.
+        </div>
+        <div>
+          <div class="concl-sub">Validación territorial</div>
+          Cuenca registra la tasa de empleo pleno más alta del país (55%) con fuerte demanda en manufactura, TI y turismo.
+          Morona Santiago y Cañar presentan el mayor crecimiento poblacional 17–25 y la mayor brecha de oferta formativa técnica.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- ── FOOTER ── -->
+<div class="footer">
+  <div class="footer-title">REFERENCIAS BIBLIOGRÁFICAS — APARTADO 05</div>
+  <div class="footer-refs">
+    <div>• Foro Económico Mundial. (2023). The Future of Jobs Report 2023. weforum.org</div>
+    <div>• Foro Económico Mundial. (2025). The Future of Jobs Report 2025. weforum.org (ene. 2025)</div>
+    <div>• OIT / Cinterfor. (2017). El futuro de la FP en ALC. ISBN: 978-92-9088-274-9. oitcinterfor.org</div>
+    <div>• OIT. (2024). Panorama Laboral 2024 – América Latina y el Caribe. ilo.org</div>
+    <div>• SENESCYT. (2022). Datos postulación y oferta académica 2022. admision.senescyt.gob.ec</div>
+    <div>• CEAP-ESPOL. (2023). Las diez carreras universitarias con mayor demanda en Ecuador. Dic. 2023</div>
+    <div>• INEC. (2024). ENEMDU I Trimestre 2024. ecuadorencifras.gob.ec</div>
+    <div>• Ministerio del Trabajo Ecuador. (2024). Informe Dirección Regional Cuenca 2023. trabajo.gob.ec</div>
+    <div>• Ecuavisa. (2025). Ecuador tiene un exceso de médicos generales. Dic. 2025. ecuavisa.com</div>
+    <div>• Primicias. (2026). La paradoja en la salud de Ecuador. Ene. 2026. primicias.ec</div>
+    <div>• Hidrobo E. (2024). La Oferta y Demanda de Médicos en Ecuador 2016–2030. AFEME.</div>
+    <div>• UNIR Ecuador. (2024). Las 15 carreras del futuro con mayor demanda. ecuador.unir.net</div>
+    <div>• ManpowerGroup. (2024). Employment Outlook Survey 2024. manpowergroup.com</div>
+    <div>• Primicias. (2024). Sectores con mayor oferta de empleo para 2025. Dic. 2024. primicias.ec</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+<script>
+/* ── CAREER DATA ── */
+const careers = [
+  { id:0, nombre:"Ing. Tecnología e Informática", post:480, demLatam:95, demEc:75, demZ6:75, sat:"MUY BAJA", urgencia:5, sector:"TI",    icon:"💻" },
+  { id:1, nombre:"Tecnologías en Construcción",   post:280, demLatam:75, demEc:75, demZ6:75, sat:"BAJA",     urgencia:4, sector:"CONST", icon:"🏗️" },
+  { id:2, nombre:"Mercadotecnia y Diseño",         post:295, demLatam:95, demEc:75, demZ6:50, sat:"BAJA",     urgencia:4, sector:"MKT",  icon:"📊" },
+  { id:3, nombre:"Tecnol. Turismo y Cultura",      post:260, demLatam:50, demEc:75, demZ6:95, sat:"MUY BAJA", urgencia:5, sector:"TUR",  icon:"🌍" },
+  { id:4, nombre:"Centro Tecnol. en Salud",        post:210, demLatam:75, demEc:95, demZ6:95, sat:"MUY BAJA", urgencia:5, sector:"SALUD",icon:"🏥" },
+  { id:5, nombre:"Tecnología Agropecuaria",        post:240, demLatam:75, demEc:75, demZ6:95, sat:"BAJA",     urgencia:5, sector:"AGRO", icon:"🌱" },
+];
+const stars = n => "⭐".repeat(n);
+
+/* ── TABS ── */
+let activeTab = 0;
+const chartsRendered = {};
+
+function switchTab(i) {
+  document.querySelectorAll('.tab-panel').forEach((p,idx)=>{
+    p.classList.toggle('active', idx===i);
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,idx)=>{
+    b.classList.toggle('active', idx===i);
+  });
+  activeTab = i;
+  setTimeout(()=>{ initChartsForTab(i); }, 50);
+  if(i===3) setTimeout(animateKPIs, 300);
+  if(i===2) renderCareerList('TODOS');
+}
+
+/* ── CAREER SELECTOR ── */
+let selectedCareer = null;
+let currentFilter  = 'TODOS';
+
+function filterSector(sector, btn) {
+  currentFilter = sector;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedCareer = null;
+  renderCareerList(sector);
+}
+
+function renderCareerList(sector) {
+  const list = document.getElementById('careerList');
+  const filtered = sector==='TODOS' ? careers : careers.filter(c=>c.sector===sector);
+  list.innerHTML = filtered.map(c=>`
+    <div class="career-item ${selectedCareer===c.id?'selected':''}"
+      onclick="selectCareer(${c.id})" id="ci-${c.id}">
+      <div class="career-item-name">
+        <span>${c.icon} ${c.nombre}</span>
+        <span>${stars(c.urgencia)}</span>
+      </div>
+      <div class="career-item-sub">${c.post} postulantes/año · Saturación: ${c.sat}</div>
+    </div>
+  `).join('');
+}
+
+function selectCareer(id) {
+  selectedCareer = selectedCareer===id ? null : id;
+  renderCareerList(currentFilter);
+  const detail = document.getElementById('careerDetail');
+  if(selectedCareer===null){
+    detail.innerHTML = '<div class="career-detail-empty"><span style="font-size:40px">👈</span>Selecciona una carrera para ver el detalle</div>';
+    return;
+  }
+  const c = careers.find(x=>x.id===id);
+  detail.innerHTML = `
+    <div style="animation:fadeUp .3s ease">
+      <div class="career-detail-name">${c.icon} ${c.nombre}</div>
+      <div class="career-detail-sub">Sector: ${c.sector} · Urgencia: ${stars(c.urgencia)}</div>
+      ${[['LATAM',c.demLatam],['Ecuador',c.demEc],['Zona 6',c.demZ6]].map(([label,val])=>`
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Demanda ${label}</span><span style="color:var(--green);font-weight:700">${val}%</span></div>
+          <div class="progress-track"><div class="progress-bar" id="pb-${label.replace(' ','')}"></div></div>
+        </div>
+      `).join('')}
+      <div class="career-stats-grid">
+        <div class="career-stat"><div class="career-stat-k">Postulantes/año</div><div class="career-stat-v">${c.post}</div></div>
+        <div class="career-stat"><div class="career-stat-k">Saturación actual</div><div class="career-stat-v">${c.sat}</div></div>
+        <div class="career-stat"><div class="career-stat-k">Urgencia Zona 6</div><div class="career-stat-v">${stars(c.urgencia)}</div></div>
+      </div>
+    </div>`;
+  // animate bars
+  setTimeout(()=>{
+    [['LATAM',c.demLatam],['Ecuador',c.demEc],['Zona6',c.demZ6]].forEach(([label,val])=>{
+      const bar = document.getElementById(`pb-${label}`);
+      if(bar) bar.style.width = `${val}%`;
+    });
+  }, 80);
+}
+
+/* ── KPI COUNTER ── */
+function animateKPIs() {
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const target = parseFloat(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    const dec    = target % 1 !== 0;
+    let start    = 0;
+    const step   = target / 60;
+    const timer  = setInterval(()=>{
+      start += step;
+      if(start>=target){ el.textContent = (dec?target.toFixed(1):target.toLocaleString()) + suffix; clearInterval(timer); }
+      else el.textContent = (dec?start.toFixed(1):Math.floor(start).toLocaleString()) + suffix;
+    }, 20);
+  });
+}
+
+/* ── CHART.JS HELPERS ── */
+const navy='#1B3A5C', navy2='#2B4F76', steel='#4A6D8C';
+
+function hBar(id, labels, data, colors, xMax){
+  if(chartsRendered[id]) return;
+  const ctx = document.getElementById(id)?.getContext('2d');
+  if(!ctx) return;
+  chartsRendered[id] = new Chart(ctx,{
+    type:'bar',
+    data:{ labels, datasets:[{ data, backgroundColor:colors, borderRadius:4 }] },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.raw}%`}} },
+      scales:{
+        x:{ max:xMax||50, ticks:{callback:v=>`${v}%`, font:{size:10}}, grid:{color:'#E5EAF0'} },
+        y:{ ticks:{font:{size:9}}, grid:{display:false} }
+      }
+    }
+  });
+}
+
+function vBar(id, labels, data, colors){
+  if(chartsRendered[id]) return;
+  const ctx = document.getElementById(id)?.getContext('2d');
+  if(!ctx) return;
+  chartsRendered[id] = new Chart(ctx,{
+    type:'bar',
+    data:{ labels, datasets:[{ data, backgroundColor:colors||navy2, borderRadius:[4,4,0,0] }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ ticks:{callback:v=>`${v}%`, font:{size:10}}, grid:{color:'#E5EAF0'} },
+        x:{ ticks:{font:{size:9}}, grid:{display:false} }
+      }
+    }
+  });
+}
+
+function pie(id, labels, data, colors){
+  if(chartsRendered[id]) return;
+  const ctx = document.getElementById(id)?.getContext('2d');
+  if(!ctx) return;
+  chartsRendered[id] = new Chart(ctx,{
+    type:'doughnut',
+    data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#fff' }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom', labels:{font:{size:10}, boxWidth:12}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}%`}} }
+    }
+  });
+}
+
+function line(id, labels, data, refVal){
+  if(chartsRendered[id]) return;
+  const ctx = document.getElementById(id)?.getContext('2d');
+  if(!ctx) return;
+  chartsRendered[id] = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        { label:'Tasa Ecuador', data, borderColor:'#C0392B', backgroundColor:'rgba(192,57,43,.15)',
+          borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#C0392B', fill:true, tension:.3 },
+        { label:'Recomendación OMS', data:labels.map(()=>refVal), borderColor:'#27AE60',
+          borderDash:[6,3], borderWidth:2, pointRadius:0, fill:false }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom', labels:{font:{size:10}}},
+        tooltip:{mode:'index', intersect:false} },
+      scales:{
+        y:{ max:70, ticks:{font:{size:10}}, grid:{color:'#E5EAF0'} },
+        x:{ ticks:{font:{size:10}}, grid:{display:false} }
+      }
+    }
+  });
+}
+
+/* ── INIT CHARTS PER TAB ── */
+function initChartsForTab(i){
+  if(i===0){
+    hBar('chartWef',
+      ['Big Data / IA','Ciberseguridad','Sostenibilidad','Agropecuario verde','Construcción sosten.','Salud & Cuidados','Marketing Digital','Turismo'],
+      [42,33,34,30,22,24,19,14],
+      [navy,navy2,steel,'#5A8A6A','#7AABA8','#6B8FA8','#8FAFC5','#B0C8D9']);
+    pie('chartLatamPie',
+      ['Tecnología & Software','Salud & Telemedicina','Marketing Digital','Energía Renovable','Agropecuario/Biotech','Otros'],
+      [34,22,16,12,10,6],
+      [navy,steel,navy2,'#6B8FA8','#8FAFC5','#B0C8D9']);
+  }
+  if(i===1){
+    hBar('chartPostuladas',
+      ['Derecho','Ed. Inicial','Enfermería','Medicina','Adm. Empresas','Ed. Básica','Psicología','Cont./Auditoría','Ing. Civil','Medicina Vet.'],
+      [25096,24359,22789,22449,18000,16500,8352,8556,6504,3194],
+      ['#C0392B','#C0392B','#E67E22','#C0392B','#E67E22','#E67E22','#4A6D8C','#4A6D8C','#4A6D8C','#27AE60'],
+      30000);
+    line('chartMedicos',['2016','2017','2022','2030*'],[20.52,22.2,40,59.1],23);
+  }
+  if(i===2){
+    vBar('chartCuenca',['Cuenca','Quito','Guayaquil','Nacional'],[55,48.5,44.5,30],[navy,navy2,steel,'#B0C8D9']);
+    vBar('chartRamas',['Servicios','Comercio','Agricultura','Manufactura','Construcción','Otros'],[34.2,18.5,16.8,10.2,7.1,13.2],navy2);
+  }
+  if(i===3){
+    hBar('chartSectores',
+      ['Sector exportador','Tecnología / TI','Minería','Admón. y Finanzas','Construcción','Turismo / Hostelería','Agroindustria'],
+      [5,5,4,4,3,3,3],[navy,navy,navy2,navy2,steel,steel,steel],6);
+  }
+}
+
+/* ── INIT ── */
+initChartsForTab(0);
+renderCareerList('TODOS');
+</script>
+</body>
+</html>
